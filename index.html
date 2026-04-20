@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZAHER // OS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Geist:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f5f0e8;--bg2:#ede8de;--bg3:#e4ddd0;--surface:#ede8debb;--border:#c8bfaf;
+    --text:#1a1612;--text2:#6b6258;--text3:#9c9188;--accent:#c17f4a;--accent2:#8b5e3c;
+    --red:#b84c4c;--green:#4c8b5e;--card-shadow:0 1px 3px rgba(0,0,0,0.06),0 1px 2px rgba(0,0,0,0.04);--radius:12px;
+  }
+  [data-theme="dark"] {
+    --bg:#0f0d0b;--bg2:#171411;--bg3:#1e1a16;--surface:#1e1a16bb;--border:#2e2920;
+    --text:#f0ebe2;--text2:#8a8070;--text3:#5a5248;--accent:#d4924f;--accent2:#a87040;
+    --red:#c06060;--green:#5a9e72;--card-shadow:0 1px 3px rgba(0,0,0,0.3),0 1px 2px rgba(0,0,0,0.2);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Geist',sans-serif;font-size:13px;min-height:100vh;overflow-x:hidden;transition:background 0.3s,color 0.3s;}
+  .topbar{display:flex;justify-content:space-between;align-items:center;padding:8px 20px;background:var(--bg2);border-bottom:1px solid var(--border);font-family:'DM Mono',monospace;font-size:11px;color:var(--text2);letter-spacing:0.05em;position:sticky;top:0;z-index:100;}
+  .topbar-left{display:flex;align-items:center;gap:16px;}
+  .topbar-logo{color:var(--text);font-weight:500;letter-spacing:0.1em;}
+  .topbar-logo span{color:var(--accent);}
+  .topbar-right{display:flex;align-items:center;gap:16px;}
+  .status-dot{width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;margin-right:4px;animation:pulse 2s infinite;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+  .theme-toggle{background:none;border:1px solid var(--border);color:var(--text2);padding:3px 8px;border-radius:4px;cursor:pointer;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.05em;transition:all 0.2s;}
+  .theme-toggle:hover{border-color:var(--accent);color:var(--accent);}
+  .grid{display:grid;grid-template-columns:220px 1fr 1fr 220px;gap:12px;padding:12px;max-width:1400px;margin:0 auto;}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;backdrop-filter:blur(8px);box-shadow:var(--card-shadow);transition:background 0.3s,border-color 0.3s;overflow:hidden;position:relative;}
+  .card-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.1em;color:var(--text3);margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;}
+  .live-badge{font-size:9px;color:var(--green);letter-spacing:0.08em;}
+  .warn-badge{font-size:9px;color:var(--accent);letter-spacing:0.08em;}
+  /* OPERATOR */
+  .card-operator{grid-column:1;grid-row:1;}
+  .operator-name{font-family:'Instrument Serif',serif;font-size:22px;line-height:1.1;margin-bottom:4px;}
+  .operator-name em{color:var(--accent);font-style:italic;}
+  .operator-meta{font-size:10px;color:var(--text3);letter-spacing:0.08em;font-family:'DM Mono',monospace;margin-bottom:12px;}
+  .operator-tags{display:flex;gap:6px;flex-wrap:wrap;}
+  .tag{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.08em;padding:3px 8px;border-radius:3px;border:1px solid var(--border);color:var(--text2);}
+  .tag.active{border-color:var(--accent);color:var(--accent);}
+  /* SESSION */
+  .card-session{grid-column:2/4;grid-row:1;padding-right:200px;}
+  .greeting{font-family:'Instrument Serif',serif;font-size:38px;line-height:1.05;margin-bottom:6px;}
+  .greeting em{color:var(--accent);font-style:italic;}
+  .session-meta{font-family:'DM Mono',monospace;font-size:11px;color:var(--text2);letter-spacing:0.06em;}
+  .clock-display{position:absolute;right:20px;top:50%;transform:translateY(-50%);text-align:right;}
+  .clock-time{font-family:'DM Mono',monospace;font-size:42px;font-weight:300;letter-spacing:-0.02em;color:var(--text);line-height:1;}
+  .clock-time .secs{font-size:20px;color:var(--text3);vertical-align:super;}
+  .clock-tz{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);text-align:right;margin-top:2px;}
+  /* WEATHER */
+  .card-weather{grid-column:4;grid-row:1;}
+  .weather-temp{font-family:'Instrument Serif',serif;font-size:42px;line-height:1;}
+  .weather-desc{font-size:12px;color:var(--text2);margin-top:4px;text-transform:capitalize;}
+  .weather-meta{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);margin-top:8px;line-height:1.8;}
+  .weather-meta span{color:var(--text2);}
+  /* SECTION */
+  .section-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.14em;color:var(--text3);grid-column:1/-1;padding:4px 0 0 2px;}
+  /* CALENDAR */
+  .card-calendar{grid-column:1/3;grid-row:3;}
+  .calendar-header{font-family:'Instrument Serif',serif;font-size:22px;margin-bottom:12px;}
+  .calendar-header em{font-style:italic;color:var(--accent);}
+  .week-strip{display:flex;gap:6px;margin-bottom:14px;}
+  .day-chip{flex:1;text-align:center;padding:8px 4px;border-radius:8px;border:1px solid var(--border);cursor:pointer;transition:all 0.15s;}
+  .day-chip:hover{border-color:var(--accent);}
+  .day-chip.today{background:var(--text);border-color:var(--text);}
+  .day-chip .day-name{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.08em;opacity:0.6;display:block;}
+  .day-chip .day-num{font-family:'Instrument Serif',serif;font-size:18px;display:block;}
+  .day-chip.today .day-name,.day-chip.today .day-num{color:var(--bg);}
+  .events-list{display:flex;flex-direction:column;gap:6px;max-height:220px;overflow-y:auto;}
+  .event-item{display:flex;align-items:flex-start;gap:10px;padding:8px 10px;border-radius:8px;border:1px solid var(--border);transition:border-color 0.15s;}
+  .event-item:hover{border-color:var(--accent);}
+  .event-time{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);min-width:55px;padding-top:1px;}
+  .event-dot{width:6px;height:6px;border-radius:50%;margin-top:4px;flex-shrink:0;}
+  .event-title{font-size:12px;font-weight:500;}
+  .event-sub{font-size:10px;color:var(--text3);margin-top:1px;}
+  .event-now{border-color:var(--accent)!important;background:color-mix(in srgb,var(--accent) 6%,transparent);}
+  .event-now .event-time{color:var(--accent);}
+  .data-age{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-top:10px;}
+  /* PRAYER */
+  .card-prayer{grid-column:3;grid-row:3;}
+  .prayer-grid{display:flex;flex-direction:column;gap:6px;}
+  .prayer-row{display:flex;justify-content:space-between;align-items:center;padding:7px 10px;border-radius:7px;border:1px solid transparent;transition:all 0.15s;}
+  .prayer-row.next{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,transparent);}
+  .prayer-row.passed{opacity:0.45;}
+  .prayer-name{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.06em;}
+  .prayer-name-ar{font-size:14px;color:var(--text3);margin-left:4px;}
+  .prayer-time-val{font-family:'DM Mono',monospace;font-size:12px;color:var(--text2);}
+  .prayer-row.next .prayer-name,.prayer-row.next .prayer-time-val{color:var(--accent);}
+  .next-badge{font-size:9px;font-family:'DM Mono',monospace;letter-spacing:0.08em;color:var(--accent);border:1px solid var(--accent);padding:1px 5px;border-radius:3px;}
+  /* HEALTH */
+  .card-health{grid-column:4;grid-row:3;}
+  .hydration-track{margin-bottom:14px;}
+  .hydration-label{display:flex;justify-content:space-between;margin-bottom:6px;}
+  .hydration-glasses{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px;}
+  .glass{width:22px;height:28px;border-radius:4px;border:1px solid var(--border);cursor:pointer;transition:all 0.15s;display:flex;align-items:center;justify-content:center;font-size:14px;background:none;}
+  .glass.filled{background:color-mix(in srgb,#4a90c4 20%,transparent);border-color:#4a90c4;}
+  .glass:hover{border-color:#4a90c4;}
+  .workout-splits{display:grid;grid-template-columns:1fr 1fr;gap:4px;}
+  .split-btn{padding:6px;border-radius:6px;border:1px solid var(--border);background:none;color:var(--text2);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.05em;cursor:pointer;transition:all 0.15s;text-align:center;}
+  .split-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .split-btn.active{background:var(--accent);border-color:var(--accent);color:var(--bg);}
+  .workout-done-btn{width:100%;margin-top:6px;padding:7px;border-radius:7px;border:1px solid var(--green);background:none;color:var(--green);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.06em;cursor:pointer;transition:all 0.2s;}
+  .workout-done-btn.done{background:var(--green);color:var(--bg);}
+  .workout-done-btn:hover{background:var(--green);color:var(--bg);}
+  /* POMODORO */
+  .card-pomodoro{grid-column:1;grid-row:4;}
+  .pomo-display{font-family:'DM Mono',monospace;font-size:44px;font-weight:300;letter-spacing:-0.02em;text-align:center;margin:8px 0;color:var(--text);}
+  .pomo-display.running{color:var(--accent);}
+  .pomo-display.break{color:var(--green);}
+  .pomo-controls{display:flex;gap:6px;justify-content:center;margin-bottom:10px;}
+  .pomo-btn{padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:none;color:var(--text2);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.06em;cursor:pointer;transition:all 0.2s;}
+  .pomo-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .pomo-btn.primary{background:var(--text);color:var(--bg);border-color:var(--text);}
+  .pomo-btn.primary:hover{background:var(--accent);border-color:var(--accent);}
+  .pomo-progress{height:3px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:6px;}
+  .pomo-bar{height:100%;background:var(--accent);border-radius:2px;transition:width 1s linear;}
+  .pomo-sessions{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);text-align:center;margin-top:8px;}
+  .pomo-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--border);margin:0 2px;}
+  .pomo-dot.done{background:var(--accent);}
+  /* SPOTIFY */
+  .card-spotify{grid-column:2/4;grid-row:4;}
+  .spotify-inner{display:flex;align-items:center;gap:16px;}
+  .album-art{width:72px;height:72px;border-radius:8px;background:var(--bg3);flex-shrink:0;display:flex;align-items:center;justify-content:center;overflow:hidden;border:1px solid var(--border);}
+  .album-art img{width:100%;height:100%;object-fit:cover;}
+  .album-art-placeholder{font-size:28px;}
+  .track-title{font-family:'Instrument Serif',serif;font-size:20px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .track-title em{font-style:italic;color:var(--accent);}
+  .track-artist{font-size:11px;color:var(--text2);margin-top:2px;}
+  .progress-bar{height:3px;background:var(--border);border-radius:2px;overflow:hidden;cursor:pointer;margin-top:10px;}
+  .progress-fill{height:100%;background:var(--accent);border-radius:2px;transition:width 1s linear;}
+  .progress-times{display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-top:4px;}
+  .spotify-controls{display:flex;gap:12px;align-items:center;margin-top:8px;}
+  .ctrl-btn{background:none;border:none;color:var(--text2);cursor:pointer;font-size:16px;padding:4px;transition:color 0.15s;line-height:1;}
+  .ctrl-btn:hover{color:var(--accent);}
+  .ctrl-btn.play{width:32px;height:32px;border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;}
+  .ctrl-btn.play:hover{border-color:var(--accent);}
+  .connect-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:7px;border:1px solid var(--border);background:none;color:var(--text2);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.06em;cursor:pointer;transition:all 0.2s;}
+  .connect-btn:hover{border-color:var(--accent);color:var(--accent);}
+  /* GITHUB */
+  .card-github{grid-column:1/3;grid-row:5;}
+  .github-stats{display:flex;gap:16px;margin-bottom:12px;}
+  .github-stat{text-align:center;}
+  .github-stat-val{font-family:'Instrument Serif',serif;font-size:28px;color:var(--text);}
+  .github-stat-label{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:0.08em;}
+  .contrib-grid{display:flex;gap:2px;flex-wrap:wrap;}
+  .contrib-cell{width:10px;height:10px;border-radius:2px;background:var(--bg3);border:1px solid var(--border);}
+  .contrib-cell.l1{background:color-mix(in srgb,var(--accent) 25%,var(--bg3));border-color:transparent;}
+  .contrib-cell.l2{background:color-mix(in srgb,var(--accent) 50%,var(--bg3));border-color:transparent;}
+  .contrib-cell.l3{background:color-mix(in srgb,var(--accent) 75%,var(--bg3));border-color:transparent;}
+  .contrib-cell.l4{background:var(--accent);border-color:transparent;}
+  /* SUN */
+  .card-sun{grid-column:3;grid-row:5;}
+  .sun-svg{width:100%;height:70px;}
+  .sun-times{display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:10px;color:var(--text2);}
+  /* DAY */
+  .card-daytrack{grid-column:4;grid-row:5;}
+  .day-number{font-family:'Instrument Serif',serif;font-size:52px;line-height:1;}
+  .day-of{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:0.08em;margin-top:2px;}
+  .year-bar{height:4px;background:var(--border);border-radius:2px;margin:10px 0 6px;overflow:hidden;}
+  .year-fill{height:100%;background:var(--accent);border-radius:2px;}
+  .year-pct{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);}
+  .skeleton{background:linear-gradient(90deg,var(--bg3) 25%,var(--bg2) 50%,var(--bg3) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:4px;height:14px;margin:4px 0;}
+  @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+  ::-webkit-scrollbar{width:4px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+  @media(max-width:900px){
+    .grid{grid-template-columns:1fr 1fr;}
+    .card-session,.card-calendar,.card-spotify,.card-github{grid-column:1/3;}
+    .card-session{padding-right:16px;}
+    .clock-display{position:static;transform:none;text-align:left;margin-top:12px;}
+    .greeting{font-size:26px;}
+    .clock-time{font-size:28px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <span class="topbar-logo">ZAHER <span>//</span> OS · V1.0</span>
+    <span><span class="status-dot"></span>ONLINE</span>
+  </div>
+  <div class="topbar-right">
+    <span id="tb-weather">TROY, MI</span>
+    <span id="tb-time">--:--</span>
+    <button class="theme-toggle" onclick="toggleTheme()">☽ DARK</button>
+  </div>
+</div>
+
+<div class="grid">
+
+  <div class="card card-operator">
+    <div class="card-label">01 // OPERATOR</div>
+    <div class="operator-name">Zaher <em>Hage</em></div>
+    <div class="operator-meta">SOFTWARE DEV · TROY, MI</div>
+    <div class="operator-tags">
+      <span class="tag active">DEEP WORK</span>
+      <span class="tag" id="workout-tag">NO WORKOUT</span>
+      <span class="tag" id="prayer-tag">—</span>
+    </div>
+  </div>
+
+  <div class="card card-session">
+    <div class="card-label">02 // SESSION</div>
+    <div class="greeting" id="greeting">Good <em>morning</em>, Zaher.</div>
+    <div class="session-meta" id="session-meta">—</div>
+    <div class="clock-display">
+      <div class="clock-time" id="clock">--:--<span class="secs">--</span></div>
+      <div class="clock-tz">UTC−05:00 · EDT</div>
+    </div>
+  </div>
+
+  <div class="card card-weather">
+    <div class="card-label">03 // WEATHER <span class="live-badge">LIVE</span></div>
+    <div class="weather-temp" id="w-temp">--°</div>
+    <div class="weather-desc" id="w-desc">Loading...</div>
+    <div class="weather-meta">
+      <div>FEELS · <span id="w-feels">--</span></div>
+      <div>HUMIDITY · <span id="w-humid">--</span></div>
+      <div>WIND · <span id="w-wind">--</span></div>
+    </div>
+  </div>
+
+  <div class="section-label">// SCHEDULE + FAITH</div>
+
+  <div class="card card-calendar">
+    <div class="card-label">04 // CALENDAR <span id="cal-badge" class="warn-badge">LOADING</span></div>
+    <div class="calendar-header" id="cal-header">—</div>
+    <div class="week-strip" id="week-strip"></div>
+    <div class="events-list" id="events-list">
+      <div class="skeleton" style="width:80%"></div>
+      <div class="skeleton" style="width:60%"></div>
+      <div class="skeleton" style="width:70%"></div>
+    </div>
+    <div class="data-age" id="data-age"></div>
+  </div>
+
+  <div class="card card-prayer">
+    <div class="card-label">05 // PRAYER TIMES <span class="live-badge">LIVE</span></div>
+    <div class="prayer-grid" id="prayer-grid">
+      <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>
+      <div class="skeleton"></div><div class="skeleton"></div>
+    </div>
+  </div>
+
+  <div class="card card-health">
+    <div class="card-label">06 // HEALTH LOG</div>
+    <div class="hydration-track">
+      <div class="hydration-label">
+        <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3)">HYDRATION</span>
+        <span style="font-family:'DM Mono',monospace;font-size:10px;color:#4a90c4" id="glass-count">0 / 8</span>
+      </div>
+      <div class="hydration-glasses" id="hydration-glasses"></div>
+    </div>
+    <div>
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);margin-bottom:6px">TODAY'S SPLIT</div>
+      <div class="workout-splits">
+        <button class="split-btn" onclick="selectSplit(this,'Upper')">UPPER</button>
+        <button class="split-btn" onclick="selectSplit(this,'Lower')">LOWER</button>
+        <button class="split-btn" onclick="selectSplit(this,'Push')">PUSH</button>
+        <button class="split-btn" onclick="selectSplit(this,'Pull')">PULL</button>
+        <button class="split-btn" onclick="selectSplit(this,'Legs')">LEGS</button>
+        <button class="split-btn" onclick="selectSplit(this,'Rest')">REST</button>
+      </div>
+      <button class="workout-done-btn" id="workout-done-btn" onclick="toggleWorkoutDone()">✓ MARK DONE</button>
+    </div>
+  </div>
+
+  <div class="section-label">// FOCUS + MUSIC</div>
+
+  <div class="card card-pomodoro">
+    <div class="card-label">07 // FOCUS TIMER</div>
+    <div class="pomo-display" id="pomo-display">25:00</div>
+    <div class="pomo-controls">
+      <button class="pomo-btn primary" id="pomo-start" onclick="pomodoroAction()">START</button>
+      <button class="pomo-btn" onclick="pomodoroReset()">RESET</button>
+    </div>
+    <div class="pomo-progress"><div class="pomo-bar" id="pomo-bar" style="width:100%"></div></div>
+    <div class="pomo-sessions" id="pomo-sessions">
+      SESSION 1 OF 4 &nbsp;
+      <span class="pomo-dot" id="pd1"></span><span class="pomo-dot" id="pd2"></span>
+      <span class="pomo-dot" id="pd3"></span><span class="pomo-dot" id="pd4"></span>
+    </div>
+  </div>
+
+  <div class="card card-spotify">
+    <div class="card-label">08 // NOW PLAYING <span class="live-badge" id="sp-status"></span></div>
+    <div id="spotify-content">
+      <div style="text-align:center;padding:20px 0">
+        <button class="connect-btn" onclick="connectSpotify()">♫ CONNECT SPOTIFY</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-label">// ACTIVITY + TIME</div>
+
+  <div class="card card-github">
+    <div class="card-label">09 // GITHUB · zaherhage <span class="live-badge">LIVE</span></div>
+    <div class="github-stats">
+      <div class="github-stat"><div class="github-stat-val" id="gh-commits">—</div><div class="github-stat-label">TODAY'S COMMITS</div></div>
+      <div class="github-stat"><div class="github-stat-val" id="gh-streak">—</div><div class="github-stat-label">DAY STREAK</div></div>
+      <div class="github-stat"><div class="github-stat-val" id="gh-repos">—</div><div class="github-stat-label">PUBLIC REPOS</div></div>
+    </div>
+    <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:0.08em;margin-bottom:6px">CONTRIBUTIONS · LAST 16 WEEKS</div>
+    <div class="contrib-grid" id="contrib-grid"></div>
+  </div>
+
+  <div class="card card-sun">
+    <div class="card-label">10 // SOLAR</div>
+    <div style="position:relative;height:70px;margin:8px 0">
+      <svg class="sun-svg" viewBox="0 0 200 70">
+        <path d="M10,65 Q100,5 190,65" fill="none" stroke="var(--border)" stroke-width="1.5" stroke-dasharray="4,3"/>
+        <circle id="sun-pos" cx="100" cy="35" r="5" fill="var(--accent)" opacity="0.9"/>
+      </svg>
+    </div>
+    <div class="sun-times">
+      <div><span style="color:var(--accent)">↑</span> <span id="sunrise-time">--:--</span></div>
+      <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3)" id="sun-pct">--%</div>
+      <div><span id="sunset-time">--:--</span> <span style="color:var(--text3)">↓</span></div>
+    </div>
+  </div>
+
+  <div class="card card-daytrack">
+    <div class="card-label">11 // YEAR PROGRESS</div>
+    <div class="day-number" id="day-number">—</div>
+    <div class="day-of" id="day-of">DAY — OF 365</div>
+    <div class="year-bar"><div class="year-fill" id="year-fill" style="width:0%"></div></div>
+    <div class="year-pct" id="year-pct">—% COMPLETE</div>
+  </div>
+
+</div>
+
+<script>
+const CONFIG={lat:42.5803,lon:-83.1468,owmKey:'336894563f1544a0d18892260d8ece33',githubUser:'zaherhage',spotifyClientId:'58596aa908194ee0a43b66823ac93f00',redirectUri:'https://zaherhage.github.io/',dataUrl:'https://zaherhage.github.io/data.json'};
+
+// THEME
+function toggleTheme(){const h=document.documentElement,d=h.getAttribute('data-theme')==='dark';h.setAttribute('data-theme',d?'light':'dark');document.querySelector('.theme-toggle').textContent=d?'☽ DARK':'☀ LIGHT';localStorage.setItem('theme',d?'light':'dark');}
+(()=>{const s=localStorage.getItem('theme')||'light';document.documentElement.setAttribute('data-theme',s);if(s==='dark')document.querySelector('.theme-toggle').textContent='☀ LIGHT';})();
+
+// CLOCK
+function fmt12(d){let h=d.getHours(),m=String(d.getMinutes()).padStart(2,'0');return `${h%12||12}:${m} ${h>=12?'PM':'AM'}`;}
+function getDOY(d){return Math.floor((d-new Date(d.getFullYear(),0,0))/86400000);}
+let weekBuilt=false;
+function updateClock(){
+  const now=new Date(),h=String(now.getHours()).padStart(2,'0'),m=String(now.getMinutes()).padStart(2,'0'),s=String(now.getSeconds()).padStart(2,'0');
+  document.getElementById('clock').innerHTML=`${h}:${m}<span class="secs">${s}</span>`;
+  document.getElementById('tb-time').textContent=`${h}:${m}`;
+  const part=now.getHours()<12?'morning':now.getHours()<17?'afternoon':'evening';
+  document.getElementById('greeting').innerHTML=`Good <em>${part}</em>, Zaher.`;
+  const DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('session-meta').textContent=`${DAYS[now.getDay()].toUpperCase()} · ${MONTHS[now.getMonth()].toUpperCase()} ${now.getDate()}, ${now.getFullYear()} · DAY ${getDOY(now)} OF 365`;
+  document.getElementById('cal-header').innerHTML=`${DAYS[now.getDay()]}, <em>${MONTHS[now.getMonth()]} ${now.getDate()}</em>`;
+  if(!weekBuilt){
+    weekBuilt=true;
+    const strip=document.getElementById('week-strip');
+    const labels=['MON','TUE','WED','THU','FRI','SAT','SUN'];
+    const dow=now.getDay(),mon=new Date(now);
+    mon.setDate(now.getDate()+(dow===0?-6:1-dow));
+    for(let i=0;i<7;i++){const d=new Date(mon);d.setDate(mon.getDate()+i);const chip=document.createElement('div');chip.className='day-chip'+(d.toDateString()===now.toDateString()?' today':'');chip.innerHTML=`<span class="day-name">${labels[i]}</span><span class="day-num">${d.getDate()}</span>`;strip.appendChild(chip);}
+  }
+}
+setInterval(updateClock,1000);updateClock();
+
+// YEAR PROGRESS
+(()=>{const now=new Date(),doy=getDOY(now),total=(now.getFullYear()%4===0)?366:365,pct=(doy/total*100).toFixed(1);document.getElementById('day-number').textContent=doy;document.getElementById('day-of').textContent=`DAY ${doy} OF ${total}`;document.getElementById('year-fill').style.width=pct+'%';document.getElementById('year-pct').textContent=`${pct}% COMPLETE`;})();
+
+// WEATHER
+async function fetchWeather(){
+  try{
+    const r=await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${CONFIG.lat}&lon=${CONFIG.lon}&appid=${CONFIG.owmKey}&units=imperial`),d=await r.json();
+    document.getElementById('w-temp').textContent=`${Math.round(d.main.temp)}°F`;
+    document.getElementById('w-desc').textContent=d.weather[0].description;
+    document.getElementById('w-feels').textContent=`${Math.round(d.main.feels_like)}°F`;
+    document.getElementById('w-humid').textContent=`${d.main.humidity}%`;
+    document.getElementById('w-wind').textContent=`${Math.round(d.wind.speed)} MPH`;
+    document.getElementById('tb-weather').textContent=`TROY, MI · ${Math.round(d.main.temp)}°F`;
+    const sr=new Date(d.sys.sunrise*1000),ss=new Date(d.sys.sunset*1000);
+    document.getElementById('sunrise-time').textContent=fmt12(sr);
+    document.getElementById('sunset-time').textContent=fmt12(ss);
+    const pct=Math.max(0,Math.min(1,(Date.now()-d.sys.sunrise*1000)/(d.sys.sunset*1000-d.sys.sunrise*1000)));
+    document.getElementById('sun-pct').textContent=`${Math.round(pct*100)}% THROUGH DAY`;
+    document.getElementById('sun-pos').setAttribute('cx',10+pct*180);
+    document.getElementById('sun-pos').setAttribute('cy',65-60*Math.sin(Math.PI*pct));
+  }catch(e){document.getElementById('w-desc').textContent='Unable to load';}
+}
+fetchWeather();setInterval(fetchWeather,10*60*1000);
+
+// PRAYER
+const PRAYERS=[{key:'Fajr',ar:'فجر'},{key:'Dhuhr',ar:'ظهر'},{key:'Asr',ar:'عصر'},{key:'Maghrib',ar:'مغرب'},{key:'Isha',ar:'عشاء'}];
+async function fetchPrayers(){
+  try{
+    const now=new Date(),ds=`${String(now.getDate()).padStart(2,'0')}-${String(now.getMonth()+1).padStart(2,'0')}-${now.getFullYear()}`;
+    const r=await fetch(`https://api.aladhan.com/v1/timings/${ds}?latitude=${CONFIG.lat}&longitude=${CONFIG.lon}&method=2`),d=await r.json(),times=d.data.timings;
+    const grid=document.getElementById('prayer-grid');grid.innerHTML='';
+    const nowMins=now.getHours()*60+now.getMinutes();let nextFound=false;
+    PRAYERS.forEach(p=>{
+      const [hh,mm]=times[p.key].split(':').map(Number),pMins=hh*60+mm,isPassed=nowMins>pMins,isNext=!nextFound&&!isPassed;
+      if(isNext){nextFound=true;document.getElementById('prayer-tag').textContent=`↑ ${p.key.toUpperCase()}`;}
+      const row=document.createElement('div');row.className='prayer-row'+(isNext?' next':'')+(isPassed?' passed':'');
+      row.innerHTML=`<div style="display:flex;align-items:center;gap:6px"><span class="prayer-name">${p.key.toUpperCase()}</span><span class="prayer-name-ar">${p.ar}</span></div><div style="display:flex;align-items:center;gap:8px"><span class="prayer-time-val">${hh%12||12}:${String(mm).padStart(2,'0')} ${hh>=12?'PM':'AM'}</span>${isNext?'<span class="next-badge">NEXT</span>':''}</div>`;
+      grid.appendChild(row);
+    });
+    if(!nextFound)document.getElementById('prayer-tag').textContent='ISHA ✓';
+  }catch(e){document.getElementById('prayer-grid').innerHTML='<div style="color:var(--text3);font-size:11px">Unable to load</div>';}
+}
+fetchPrayers();
+
+// CALENDAR (data.json from GitHub Pages)
+async function fetchCalendar(){
+  try{
+    const r=await fetch(CONFIG.dataUrl+'?t='+Date.now());
+    if(!r.ok)throw new Error();
+    const data=await r.json();
+    renderCalendar(data.events||[]);
+    const minsAgo=Math.round((Date.now()-new Date(data.fetched_at))/60000);
+    document.getElementById('data-age').textContent=`UPDATED ${minsAgo}m AGO`;
+    document.getElementById('cal-badge').textContent='LIVE';document.getElementById('cal-badge').className='live-badge';
+  }catch(e){
+    document.getElementById('cal-badge').textContent='NO DATA YET';document.getElementById('cal-badge').className='warn-badge';
+    document.getElementById('events-list').innerHTML='<div style="color:var(--text3);font-size:11px;padding:8px 0">Waiting for first GitHub Actions run — trigger it manually in your repo Actions tab.</div>';
+  }
+}
+function renderCalendar(events){
+  const list=document.getElementById('events-list');list.innerHTML='';
+  const now=new Date(),colors=['#c17f4a','#4c8b5e','#4a90c4','#b84c4c','#9b59b6'];
+  if(!events.length){list.innerHTML='<div style="color:var(--text3);font-size:11px;padding:8px 0">No events today</div>';return;}
+  events.forEach((ev,i)=>{
+    const start=ev.start?new Date(ev.start):null,end=ev.end?new Date(ev.end):null;
+    const isNow=start&&end&&!ev.allDay&&now>=start&&now<=end;
+    const timeStr=ev.allDay?'ALL DAY':(start?fmt12(start):'');
+    const item=document.createElement('div');item.className='event-item'+(isNow?' event-now':'');
+    item.innerHTML=`<span class="event-time">${timeStr}</span><span class="event-dot" style="background:${colors[i%colors.length]}"></span><div><div class="event-title">${ev.summary}</div>${ev.location?`<div class="event-sub">${ev.location}</div>`:''}</div>`;
+    list.appendChild(item);
+  });
+}
+fetchCalendar();setInterval(fetchCalendar,5*60*1000);
+
+// GITHUB
+async function fetchGitHub(){
+  try{
+    const H={Accept:'application/vnd.github.v3+json'};
+    const[uR,eR]=await Promise.all([fetch(`https://api.github.com/users/${CONFIG.githubUser}`,{headers:H}),fetch(`https://api.github.com/users/${CONFIG.githubUser}/events/public?per_page=100`,{headers:H})]);
+    const user=await uR.json(),events=await eR.json();
+    document.getElementById('gh-repos').textContent=user.public_repos??'—';
+    const today=new Date().toDateString();
+    document.getElementById('gh-commits').textContent=events.filter(e=>e.type==='PushEvent'&&new Date(e.created_at).toDateString()===today).reduce((s,e)=>s+(e.payload.commits?.length||0),0);
+    const pushDays=new Set(events.filter(e=>e.type==='PushEvent').map(e=>new Date(e.created_at).toDateString()));
+    let streak=0;const d=new Date();while(pushDays.has(d.toDateString())){streak++;d.setDate(d.getDate()-1);}
+    document.getElementById('gh-streak').textContent=streak;
+    const grid=document.getElementById('contrib-grid');grid.innerHTML='';
+    const dayMap={};events.forEach(e=>{if(e.type==='PushEvent'){const k=new Date(e.created_at).toDateString();dayMap[k]=(dayMap[k]||0)+(e.payload.commits?.length||0);}});
+    for(let i=16*7-1;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);const c=dayMap[d.toDateString()]||0,lvl=c>=10?4:c>=6?3:c>=3?2:c>=1?1:0;const cell=document.createElement('div');cell.className='contrib-cell'+(lvl?` l${lvl}`:'');cell.title=`${d.toDateString()}: ${c} commits`;grid.appendChild(cell);}
+  }catch(e){}
+}
+fetchGitHub();
+
+// POMODORO
+const PW=25*60,PB=5*60;let pomo={r:false,t:PW,b:false,s:1,iv:null};
+function pomodoroAction(){if(pomo.r){clearInterval(pomo.iv);pomo.r=false;document.getElementById('pomo-start').textContent='RESUME';document.getElementById('pomo-display').className='pomo-display';}else{pomo.r=true;document.getElementById('pomo-start').textContent='PAUSE';document.getElementById('pomo-display').className='pomo-display'+(pomo.b?' break':' running');pomo.iv=setInterval(tickPomo,1000);}}
+function tickPomo(){pomo.t--;if(pomo.t<=0){clearInterval(pomo.iv);pomo.r=false;if(!pomo.b){pomo.b=true;pomo.t=PB;document.getElementById('pomo-start').textContent='START BREAK';}else{pomo.b=false;pomo.s=Math.min(pomo.s+1,4);pomo.t=PW;document.getElementById('pomo-start').textContent=`START ${pomo.s}`;}}const total=pomo.b?PB:PW,m=String(Math.floor(pomo.t/60)).padStart(2,'0'),s=String(pomo.t%60).padStart(2,'0');document.getElementById('pomo-display').textContent=`${m}:${s}`;document.getElementById('pomo-bar').style.width=(pomo.t/total*100)+'%';}
+function pomodoroReset(){clearInterval(pomo.iv);pomo={r:false,t:PW,b:false,s:1,iv:null};document.getElementById('pomo-display').textContent='25:00';document.getElementById('pomo-display').className='pomo-display';document.getElementById('pomo-start').textContent='START';document.getElementById('pomo-bar').style.width='100%';}
+
+// HYDRATION
+let gc=parseInt(localStorage.getItem('h_'+new Date().toDateString())||'0');
+function buildH(){const c=document.getElementById('hydration-glasses');c.innerHTML='';for(let i=0;i<8;i++){const g=document.createElement('button');g.className='glass'+(i<gc?' filled':'');g.textContent=i<gc?'💧':'○';g.onclick=()=>{gc=i<gc?i:i+1;localStorage.setItem('h_'+new Date().toDateString(),gc);buildH();};c.appendChild(g);}document.getElementById('glass-count').textContent=`${gc} / 8`;}
+buildH();
+
+// WORKOUT
+let ss=localStorage.getItem('sp_'+new Date().toDateString())||'',wd=localStorage.getItem('wd_'+new Date().toDateString())==='true';
+function selectSplit(btn,name){document.querySelectorAll('.split-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');ss=name;localStorage.setItem('sp_'+new Date().toDateString(),name);updateWTag();}
+function toggleWorkoutDone(){wd=!wd;localStorage.setItem('wd_'+new Date().toDateString(),wd);const btn=document.getElementById('workout-done-btn');btn.textContent=wd?'✓ DONE':'✓ MARK DONE';btn.className='workout-done-btn'+(wd?' done':'');updateWTag();}
+function updateWTag(){const t=document.getElementById('workout-tag');if(wd&&ss){t.textContent=`${ss.toUpperCase()} ✓`;t.className='tag active';}else if(ss){t.textContent=ss.toUpperCase();t.className='tag';}else{t.textContent='NO WORKOUT';t.className='tag';}}
+(()=>{if(ss)document.querySelectorAll('.split-btn').forEach(b=>{if(b.textContent.trim()===ss.toUpperCase())b.classList.add('active');});if(wd){document.getElementById('workout-done-btn').textContent='✓ DONE';document.getElementById('workout-done-btn').className='workout-done-btn done';}updateWTag();})();
+
+// SPOTIFY
+let spToken=null;
+function connectSpotify(){const p=new URLSearchParams({client_id:CONFIG.spotifyClientId,redirect_uri:CONFIG.redirectUri,response_type:'token',state:'spotify',scope:'user-read-currently-playing user-read-playback-state user-modify-playback-state'});window.location.href=`https://accounts.spotify.com/authorize?${p}`;}
+function handleSpotifyToken(t){spToken=t;sessionStorage.setItem('sp_tok',t);fetchSpotify();setInterval(fetchSpotify,5000);}
+async function fetchSpotify(){if(!spToken)return;try{const r=await fetch('https://api.spotify.com/v1/me/player/currently-playing',{headers:{Authorization:`Bearer ${spToken}`}});if(r.status===204||r.status===401){renderSpIdle();return;}const d=await r.json();if(!d||!d.item){renderSpIdle();return;}renderSp(d);}catch(e){renderSpIdle();}}
+function renderSp(d){const tr=d.item,img=tr.album.images[0]?.url||'',pct=(d.progress_ms/tr.duration_ms*100).toFixed(1),fms=ms=>`${Math.floor(ms/60000)}:${String(Math.floor(ms/1000)%60).padStart(2,'0')}`,w=tr.name.split(' '),th=w.length>1?`${w.slice(0,-1).join(' ')} <em>${w[w.length-1]}</em>`:`<em>${w[0]}</em>`;document.getElementById('sp-status').textContent=d.is_playing?'LIVE':'PAUSED';document.getElementById('spotify-content').innerHTML=`<div class="spotify-inner"><div class="album-art">${img?`<img src="${img}" alt="">`:'<span class="album-art-placeholder">♫</span>'}</div><div style="flex:1;min-width:0"><div class="track-title">${th}</div><div class="track-artist">${tr.artists.map(a=>a.name).join(', ')} · ${tr.album.name}</div><div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div><div class="progress-times"><span>${fms(d.progress_ms)}</span><span>${fms(tr.duration_ms)}</span></div><div class="spotify-controls"><button class="ctrl-btn" onclick="spCtrl('previous')">⏮</button><button class="ctrl-btn play" onclick="spCtrl('${d.is_playing?'pause':'play'}')">${d.is_playing?'⏸':'▶'}</button><button class="ctrl-btn" onclick="spCtrl('next')">⏭</button></div></div></div>`;}
+function renderSpIdle(){document.getElementById('sp-status').textContent='IDLE';document.getElementById('spotify-content').innerHTML=`<div style="display:flex;align-items:center;gap:12px;padding:8px 0"><div class="album-art"><span class="album-art-placeholder">♫</span></div><div><div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text3)">NOTHING PLAYING</div><div style="font-size:10px;color:var(--text3);margin-top:4px">Open Spotify to see it here</div></div></div>`;}
+async function spCtrl(a){if(!spToken)return;const m={play:['PUT','play'],pause:['PUT','pause'],next:['POST','next'],previous:['POST','previous']};const[method,ep]=m[a];await fetch(`https://api.spotify.com/v1/me/player/${ep}`,{method,headers:{Authorization:`Bearer ${spToken}`}});setTimeout(fetchSpotify,500);}
+
+// OAUTH CALLBACK
+(()=>{const hash=new URLSearchParams(window.location.hash.substring(1)),token=hash.get('access_token'),state=hash.get('state');if(token){history.replaceState(null,'',window.location.pathname);if(state==='spotify')handleSpotifyToken(token);}const st=sessionStorage.getItem('sp_tok');if(st){spToken=st;fetchSpotify();setInterval(fetchSpotify,5000);}})();
+</script>
+</body>
+</html>
